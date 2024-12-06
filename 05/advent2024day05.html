@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 5: Print Queue</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 5: Print Queue</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    const searchLength = 4;
+    const searchXMAS = new RegExp(/XMAS/g);
+    const searchSAMX = new RegExp(/SAMX/g);
+    function inOrder(pages, rules) {
+        for (const rule of rules) {
+            const p0index = pages.findIndex(page => page === rule[0]);
+            if (p0index < 0) continue;
+            const p1index = pages.findIndex(page => page === rule[1]);
+            if (p1index < 0) continue;
+            if (p1index < p0index) return false;
+        }
+        return true;
+    }
+    function reOrder(pagesOrig, rules) {
+        const pages = Array.from(pagesOrig);
+        while (!inOrder(pages, rules))
+            for (const rule of rules) {
+                const p0index = pages.findIndex(page => page === rule[0]);
+                if (p0index < 0) continue;
+                const p1index = pages.findIndex(page => page === rule[1]);
+                if (p1index < 0) continue;
+                if (p1index < p0index) {
+                    // move p1 from its current position in pages to after p0
+                    for (i = p1index; i <= p0index; i++) 
+                        pages[i] = pages[i + 1];  // first move all pages after p1 up to p0 down
+                    pages[p0index] = rule[1];     // then add p1 back in after p0
+                }
+            }
+        return pages;
+    }
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const rules = [];
+            let sum1 = 0;
+            let sum2 = 0;
+            for (const line of reader.result.split(/\r?\n/)) {
+                const pipeSplit = line.split('|');
+                if (pipeSplit.length === 2) {
+                    rules.push(pipeSplit.map(Number))
+                } else {
+                    const commaSplit = line.split(',');
+                    if (commaSplit.length > 1) {
+                        const pages = commaSplit.map(Number)
+                        if (inOrder(pages, rules)) {
+                            const middlePage = pages[(pages.length - 1) / 2]
+                            sum1 += middlePage;
+                        } else {
+                            const newPages = reOrder(pages, rules);
+                            const middlePage = newPages[(newPages.length - 1) / 2]
+                            sum2 += middlePage;
+                        }
+                    }
+                }
+            }
+            outputBox.value = " (part 1): " + sum1
+                            + "\n (part 2): " + sum2;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
