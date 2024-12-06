@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 3: Mull It Over</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 3: Mull It Over</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            // Part 1
+            let sum1 = 0;
+            for (const equation of reader.result.matchAll(/mul\(\d+,\d+\)/g)) {
+                const args = [...equation[0].matchAll(/\d+/g)]
+                if (args.length === 2) {
+                    console.log(args[0], '*', args[1])
+                    sum1 += parseInt(args[0]) * parseInt(args[1])
+                }
+            }
+            // Part 2: add do() and don't()
+            let sum2 = 0;
+            let enabled = true
+            for (const equation of reader.result.matchAll(/mul\(\d+,\d+\)|do\(\)|don't\(\)/g)) {
+                const instruction = equation[0];
+                if (instruction === "do()")
+                    enabled = true;
+                else if (instruction === "don't()")
+                    enabled = false;
+                else if (enabled) {
+                    const args = [...instruction.matchAll(/\d+/g)]
+                    if (args.length === 2) {
+                        console.log(args[0], '*', args[1])
+                        sum2 += parseInt(args[0]) * parseInt(args[1])
+                    }
+                }
+            }
+            outputBox.value = "sum of mul (part 1): " + sum1
+                            + "\nsum with do and don't (part 2): " + sum2;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>

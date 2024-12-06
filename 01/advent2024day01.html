@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 1.</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 1.</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    <!-- read the file as text --> 
+    function readFile(input) { 
+        let file = input.files[0];
+        let reader = new FileReader();
+        reader.onload = function() {
+            const list1 = [];
+            const list2 = [];
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            reader.result.split(/\r?\n/).forEach(line => {
+                const vals = line.split(/\s+/);
+                // console.log('line', line, 'vals', vals);
+                if (vals.length == 2) {
+                    list1.push(parseInt(vals[0]));
+                    list2.push(parseInt(vals[1]));
+                }
+            });
+            list1.sort();
+            list2.sort();
+            // const result = []
+            let totalDistance = 0;
+            let totalSimilarity = 0;
+            for (let i = 0; i < list1.length; i++) {
+                const dist = Math.abs(list1[i] - list2[i]);
+                totalDistance += dist;
+                // result.push(`${list1[i]} - ${list2[i]} = ${dist}`)
+
+                const l1val = list1[i];
+                const countIn2 = list2.reduce((total,x) => total+(x==l1val), 0);
+                const similarity = l1val * countIn2;
+                totalSimilarity += similarity;
+                // result.push(`${l1val} * count in other list: ${countIn2} = ${similarity}, total sim ${totalSimilarity}`)
+            }
+            outputBox.value = "totalDistance (part 1): " + totalDistance + 
+                          "\ntotalSimilarity (part 2): " + totalSimilarity;
+        }
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>

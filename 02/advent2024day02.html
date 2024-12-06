@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 2: Red-Nosed Reports</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 2: Red-Nosed Reports</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function isSafe(levels) {
+        let increasing = true;
+        let decreasing = true;
+        for (let i = 1; i < levels.length; i++) {
+            const diff = levels[i] - levels[i-1];
+            // Safety according to part 1 rules:
+            if (increasing && (diff < 1 || diff > 3)) 
+                increasing = false;
+            if (decreasing && (diff > -1 || diff < -3)) 
+                decreasing = false;
+        }
+        return (increasing || decreasing);
+    }
+
+    <!-- read the file as text --> 
+    function readFile(input) { 
+        let file = input.files[0];
+        let reader = new FileReader();
+        reader.onload = function() {
+            let safeCount1 = 0;
+            let safeCount2 = 0;
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            reader.result.split(/\r?\n/).forEach(line => {
+                const levels = line.split(/\s+/).map(Number);
+                if (levels.length > 1) {
+                    console.log('line', line, 'levels', levels);
+                    if (isSafe(levels)) {
+                        console.log('isSafe for both');
+                        safeCount1 += 1;
+                        safeCount2 += 1;
+                    } else { // Safety with part 2 Problem Dampener:
+                        for (let i = 0; i < levels.length; i++)
+                            if (isSafe(levels.slice(0,i).concat(levels.slice(i+1)))) {
+                                console.log('isSafe for part 2');
+                                safeCount2 += 1;
+                                break;
+                            }
+                    }
+                }
+            });
+            outputBox.value = "safeCount (part 1): " + safeCount1
+                            + "\nsafeCount (part 2): " + safeCount2;
+        }
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>

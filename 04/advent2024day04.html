@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 4: Ceres Search</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 4: Ceres Search</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    const searchLength = 4;
+    const searchXMAS = new RegExp(/XMAS/g);
+    const searchSAMX = new RegExp(/SAMX/g);
+    function countRegex(str) {
+        return (str.match(searchXMAS)?.length || 0) +
+               (str.match(searchSAMX)?.length || 0);
+    }
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const grid = reader.result.split(/\r?\n/);
+            const gridHeight = grid.length;
+            const gridWidth = grid[0].length;
+            // Part 1
+            let sum1 = 0;
+            // Count horizontal occurences 
+            sum1 += grid.reduce((count, curr) => count + countRegex(curr), 0);
+            console.log('found horizontal:', sum1);
+            // Count vertical occurences 
+            for (let col = 0; col < gridWidth; col++) {
+                colText = grid.reduce((all, currow) => all + (currow[col] || "") , "")
+                found = countRegex(colText);
+                // console.log("column", col, colText, "found", found);
+                sum1 += found;
+            }
+            // Count diagonal \ occurences
+            for (let startRow = 0; startRow <= (gridHeight - searchLength); startRow++) {
+                for (let startCol = 0; startCol <= (gridWidth - searchLength); startCol++) {
+                    const str = grid[startRow][startCol]
+                              + grid[startRow + 1][startCol + 1]
+                              + grid[startRow + 2][startCol + 2]
+                              + grid[startRow + 3][startCol + 3];
+                    found =  countRegex(str);
+                    // console.log("diagonal \\", startRow, startCol, str, found);
+                    sum1 += found;    
+                }
+            }
+
+            // Count diagonal / occurences 
+            for (let startRow = 0; startRow < (gridHeight - searchLength); startRow++) {
+                for (let startCol = searchLength - 1; startCol < gridWidth; startCol++) {
+                    const str = grid[startRow][startCol]
+                              + grid[startRow + 1][startCol - 1]
+                              + grid[startRow + 2][startCol - 2]
+                              + grid[startRow + 3][startCol - 3];
+                    found =  countRegex(str);
+                    // console.log("diagonal /", startRow, startCol, str, found);
+                    sum1 += found;    
+                }
+            }
+
+            // Part 2
+            let sum2 = 0;
+            for (let startRow = 1; startRow < (gridHeight - 1); startRow++) {
+                for (let startCol = 1; startCol < (gridWidth - 1); startCol++) {
+                    console.log("Checking ", startRow, startCol);
+                    if (grid[startRow][startCol] == "A") console.log("Center is A");
+                    if (grid[startRow - 1][startCol - 1] == "M" && grid[startRow + 1][startCol + 1] == "S") console.log("-1,-1 to +1,+1 is MAS")
+                    if (grid[startRow - 1][startCol - 1] == "S" && grid[startRow + 1][startCol + 1] == "M") console.log("-1,-1 to +1,+1 is SAM")
+                    if (grid[startRow][startCol] == "A" &&
+                        (grid[startRow - 1][startCol - 1] == "M" && grid[startRow + 1][startCol + 1] == "S" ||
+                         grid[startRow - 1][startCol - 1] == "S" && grid[startRow + 1][startCol + 1] == "M") &&
+
+                        (grid[startRow - 1][startCol + 1] == "M" && grid[startRow + 1][startCol - 1] == "S" ||
+                         grid[startRow - 1][startCol + 1] == "S" && grid[startRow + 1][startCol - 1] == "M")
+                       ) {
+                       sum2 += 1;
+                       console.log("Found at ", startRow, startCol);
+                    }
+                }
+            }
+
+            outputBox.value = "found (part 1): " + sum1
+                            + "\nsum X-MAS (part 2): " + sum2;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
