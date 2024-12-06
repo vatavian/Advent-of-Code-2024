@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 5: Print Queue, Part 1: How many distinct positions will the guard visit before leaving the mapped area?</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 5: Print Queue, Part 1: How many distinct positions will the guard visit before leaving the mapped area?</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            let uniqueVisited = 0;
+            let curX = -1;
+            let curY = -1;
+            let curDirection = -1;
+            const directionChars = "^>v<";
+            const directionVectors = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+            const grid = reader.result.split(/\r?\n/).map(str => str.split(''));
+            const gridHeight = grid.length;
+            const gridWidth = grid[0].length;
+            for (let x=0; x < gridHeight; x++)
+                for (let y=0; y < gridWidth; y++) {
+                    const dir = directionChars.indexOf(grid[y][x]);
+                    if (dir > -1) {
+                        curX = x;
+                        curY = y;
+                        curDirection = dir;
+                        console.log('Found first position: curX=',curX,'curY=',curY,'curDirection=',curDirection, directionChars[curDirection]);
+                        grid[curY][curX] = 'X';
+                        uniqueVisited = 1;
+                        break;
+                    }
+                }
+            while (curX >= 0 && curX < gridWidth 
+                && curY >= 0 && curY < gridHeight) {
+                    // console.log('curX',curX,'curY',curY,'curDirection',curDirection);
+                    nextX = curX + directionVectors[curDirection][1];
+                    nextY = curY + directionVectors[curDirection][0];
+                    if (nextX >= 0 && nextX < gridWidth 
+                     && nextY >= 0 && nextY < gridHeight)
+                        switch(grid[nextY][nextX]) {
+                            case '#':
+                                curDirection = (curDirection + 1) % 4;
+                                break;
+                            case '.':
+                            case '^':
+                            case '>':
+                            case 'v':
+                            case '<':
+                                [curY, curX] = [nextY, nextX];
+                                grid[curY][curX] = 'X';
+                                uniqueVisited += 1;
+                                break;
+                            default:
+                                [curY, curX] = [nextY, nextX];
+                        }
+                    else
+                        [curY, curX] = [nextY, nextX]
+            }
+            outputBox.value = "uniqueVisited (part 1): " + uniqueVisited
+                            + "\nexited grid at X " + curX + " Y " + curY + " Direction " + directionChars[curDirection]
+                            + grid.reduce((all, row) => all + "\n" + row.join(''), '');
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
