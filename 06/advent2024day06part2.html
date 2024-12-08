@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 5: Print Queue, Part 2: You need to get the guard stuck in a loop by adding a single new obstruction. How many different positions could you choose for this obstruction?</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 5: Print Queue, Part 2: You need to get the guard stuck in a loop by adding a single new obstruction. How many different positions could you choose for this obstruction?</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    const directionChars = "^>v<";
+    const directionVectors = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+    const dontPlaceObstacleChars = "#" + directionChars;
+
+    function findStart(grid, maxY, maxX) {
+        for (let x=0; x <= maxX; x++)
+            for (let y=0; y <= maxY; y++) {
+                const dir = directionChars.indexOf(grid[y][x]);
+                if (dir > -1) return [y, x, dir];
+            }
+    }
+
+    function obstacleCreatesLoop(grid, maxY, maxX, curY, curX, curDirection, obstacleY, obstacleX) {
+        if (dontPlaceObstacleChars.indexOf(grid[obstacleY][obstacleX]) > -1) return false;
+        let moveStack = [];
+        while (curX >= 0 && curX <= maxX 
+            && curY >= 0 && curY <= maxY) {
+            moveStackEntry = `${curX},${curY} ${curDirection}`;
+            if (moveStack.includes(moveStackEntry)) return true;
+            // console.log('curX',curX,'curY',curY,'curDirection',curDirection);
+            moveStack.push(moveStackEntry);
+            nextX = curX + directionVectors[curDirection][1];
+            nextY = curY + directionVectors[curDirection][0];
+            if (grid[nextY]?.[nextX] === '#' || (nextX === obstacleX && nextY === obstacleY))
+                curDirection = (curDirection + 1) % 4;
+            else
+                [curY, curX] = [nextY, nextX];
+        }
+        return false;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const grid = reader.result.trimRight().split(/\r?\n/).map(str => str.split(''));
+            console.log(grid[0]);
+            const maxY = grid.length - 1;
+            const maxX = grid[0].length - 1;
+            let [startY, startX, startDirection] = findStart(grid, maxY, maxX);
+            console.log('Found first position: startX=',startX,'startY=',startY,'startDirection=',startDirection, directionChars[startDirection]);
+
+            let usableObstaclePositions = 0;
+            for (let obstacleX=0; obstacleX <= maxX; obstacleX++)
+                for (let obstacleY=0; obstacleY <= maxY; obstacleY++)
+                    if (obstacleCreatesLoop(grid, maxY, maxX, startY, startX, startDirection, obstacleY, obstacleX)) {
+                        usableObstaclePositions++;
+                        console.log("New obstacle creates loop at ", obstacleX, obstacleY);
+                    }
+            outputBox.value = "usableObstaclePositions (part 2): " + usableObstaclePositions;
+            //16016 is too high
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
