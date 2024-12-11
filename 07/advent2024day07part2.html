@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 7: Bridge Repair, part 2: add, multiply or concatenate</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 7: Bridge Repair, part 2: add, multiply or concatenate</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    const operatorChars = "+*|";
+    const numAvailableOperators = operatorChars.length;
+
+    function canCombineTo(numbers) {
+        const targetTotal = numbers[0];
+        const numOperatorsNeeded = numbers.length - 2;
+        const numOperatorCombinations = numAvailableOperators ** numOperatorsNeeded;
+        // console.log('targetTotal', targetTotal, 'numOperatorsNeeded', numOperatorsNeeded, 'numOperatorCombinations', numOperatorCombinations);
+        for (let comboIndex = 0; comboIndex < numOperatorCombinations; comboIndex++) {
+            let total = numbers[1];
+            let remainingOperators = comboIndex;
+            for (let numberIndex = 2; numberIndex < numbers.length; numberIndex++) {
+                let operatorIndex = remainingOperators % numAvailableOperators;
+                let operator = operatorChars[operatorIndex];
+                // console.log(operator, numbers[numberIndex])
+                switch(operator) {
+                    case '+': total += numbers[numberIndex]; break;
+                    case '*': total *= numbers[numberIndex]; break;
+                    case '|': total = Number(`${total}${numbers[numberIndex]}`);
+                }
+                remainingOperators = (remainingOperators - operatorIndex) / numAvailableOperators;
+            }
+            if (total === targetTotal) return true;
+        }
+        return false;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const rows = reader.result.trimRight().split(/\r?\n/).map(str => str.split(/[ :]+/).map(Number));
+            console.log(rows[0]);
+            var total = 0;
+            for (const row of rows) {
+                console.log(row)
+                if (canCombineTo(row))
+                    total += row[0];
+            }
+            outputBox.value = " (part 1): " + total;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
