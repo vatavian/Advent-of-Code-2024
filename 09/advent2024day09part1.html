@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 9: Disk Fragmenter</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 9: Disk Fragmenter</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+
+    function antinodesOf(p1, p2, maxRow, maxCol) {
+        const rowDiff = p2[0] - p1[0];
+        const colDiff = p2[1] - p1[1];
+        const antinodes = [];
+        let [row, col] = p2;
+        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row += rowDiff, col += colDiff)
+            antinodes.push([row, col]);
+        [row, col] = p1;
+        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row -= rowDiff, col -= colDiff)
+            antinodes.push([row, col]);
+        return antinodes;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            const inputText = reader.result;
+            document.getElementById('inputbox').value = inputText;
+            let compressedFiles = [];
+            for (let i = 0; i < inputText.length; i+=2)
+                compressedFiles.push([Number(inputText[i]), (i < (inputText.length - 1)) ? Number(inputText[i+1]) : 0]);
+
+            let leftFileId = 0;
+            let rightFileId = compressedFiles.length - 1;
+            let uncompressedIndex = 0;
+            let checksum = 0;
+            //debugger;
+            while (leftFileId <= rightFileId) {
+                leftFileLength = compressedFiles[leftFileId][0];
+                leftFreeLength = compressedFiles[leftFileId][1];
+                // Add checksum of left file
+                for (let leftFileUncompressedIndex = 0; leftFileUncompressedIndex < leftFileLength; leftFileUncompressedIndex++) {
+                    console.log("Add left file id ${leftFileId} * index ${uncompressedIndex} = ${leftFileId * uncompressedIndex}")
+                    checksum += leftFileId * uncompressedIndex++;
+                }
+                // Add checksum of blocks moved into left free space from the right
+                for (let leftFileFreeIndex = 0; leftFileFreeIndex < leftFreeLength; leftFileFreeIndex++) {
+                    while (compressedFiles[rightFileId][0] < 1 && rightFileId > leftFileId) { // Moved this file, start moving next one
+                        rightFileId--;
+                    }
+                    if (rightFileId > leftFileId && compressedFiles[rightFileId][0] > 0) {
+                        console.log("Add right file id ${rightFileId} * index ${uncompressedIndex} = ${rightFileId * uncompressedIndex}")
+                        checksum += rightFileId * uncompressedIndex++;
+                        compressedFiles[rightFileId][0]--; // Decrease remaining size of file after moving one block
+                    }
+                }
+                
+                leftFileId++;
+            }
+            outputBox.value = "checksum (part 1): " + checksum + "\n";
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
