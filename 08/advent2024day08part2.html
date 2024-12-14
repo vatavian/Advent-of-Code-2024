@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 8: Resonant Collinearity, part 2: resonant harmonics</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 8: Resonant Collinearity, part 2: resonant harmonics</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+
+    // an antinode occurs at any point that is perfectly in line with two antennas of the same frequency
+    // but only when one of the antennas is twice as far away as the other
+    function antinodesOf(p1, p2, maxRow, maxCol) {
+        const rowDiff = p2[0] - p1[0];
+        const colDiff = p2[1] - p1[1];
+        const antinodes = [];
+        let [row, col] = p2;
+        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row += rowDiff, col += colDiff)
+            antinodes.push([row, col]);
+        [row, col] = p1;
+        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row -= rowDiff, col -= colDiff)
+            antinodes.push([row, col]);
+        return antinodes;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            const inputText = reader.result
+            document.getElementById('inputbox').value = inputText;
+            const antennaMap = new Map();
+            let rowIndex = 0;
+            let maxCol = 0;
+            const outputGrid = inputText.trimRight().split(/\r?\n/).map(row => Array.from(row));
+            for (row of inputText.trimRight().split(/\r?\n/)) {
+                if (maxCol === 0) maxCol = row.length - 1;
+                for (let colIndex = 0; colIndex < row.length; colIndex++) {
+                    ch = row[colIndex];
+                    if (ch != '.')
+                        antennaMap.set(ch, (antennaMap.get(ch) || []).concat([[rowIndex, colIndex]]));
+                }
+                rowIndex++;
+            }
+            const maxRow = rowIndex - 1;
+            for (const [key, value] of antennaMap) {
+                console.log("finding Collinearity for ", key);
+                for (i1 = 0; i1 < (value.length-1); i1++)
+                    for (i2 = i1+1; i2 < value.length; i2++) {
+                        // console.log(value[i1], ' and ', value[i2], 'antinodes:', )
+                        for (anode of antinodesOf(value[i1], value[i2], maxRow, maxCol))
+                            if (anode[0] >= 0 && anode[0] <= maxRow &&
+                                anode[1] >= 0 && anode[1] <= maxCol) {
+                                    outputGrid[anode[0]][anode[1]] = "#";
+                            }
+                    }
+            }
+            const OutputGridText = outputGrid.map(row => row.join('')).join("\n");
+            var total = OutputGridText.split("#").length - 1;
+
+            outputBox.value = " (part 2): " + total + "\n" + OutputGridText;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
