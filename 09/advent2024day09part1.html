@@ -16,20 +16,6 @@
 <textarea id="outputbox" placeholder="output text" rows=10></textarea>
 
 <script>
-
-    function antinodesOf(p1, p2, maxRow, maxCol) {
-        const rowDiff = p2[0] - p1[0];
-        const colDiff = p2[1] - p1[1];
-        const antinodes = [];
-        let [row, col] = p2;
-        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row += rowDiff, col += colDiff)
-            antinodes.push([row, col]);
-        [row, col] = p1;
-        for (; row >= 0 && row <= maxRow && col >= 0 && col <= maxCol; row -= rowDiff, col -= colDiff)
-            antinodes.push([row, col]);
-        return antinodes;
-    }
-
     function readFile(input) { 
         let reader = new FileReader();
         reader.onload = function() {
@@ -50,7 +36,7 @@
                 leftFreeLength = compressedFiles[leftFileId][1];
                 // Add checksum of left file
                 for (let leftFileUncompressedIndex = 0; leftFileUncompressedIndex < leftFileLength; leftFileUncompressedIndex++) {
-                    console.log("Add left file id ${leftFileId} * index ${uncompressedIndex} = ${leftFileId * uncompressedIndex}")
+                    console.log(`Add left file id ${leftFileId} * index ${uncompressedIndex} = ${leftFileId * uncompressedIndex}`)
                     checksum += leftFileId * uncompressedIndex++;
                 }
                 // Add checksum of blocks moved into left free space from the right
@@ -59,7 +45,7 @@
                         rightFileId--;
                     }
                     if (rightFileId > leftFileId && compressedFiles[rightFileId][0] > 0) {
-                        console.log("Add right file id ${rightFileId} * index ${uncompressedIndex} = ${rightFileId * uncompressedIndex}")
+                        console.log(`Add right file id ${rightFileId} * index ${uncompressedIndex} = ${rightFileId * uncompressedIndex}`)
                         checksum += rightFileId * uncompressedIndex++;
                         compressedFiles[rightFileId][0]--; // Decrease remaining size of file after moving one block
                     }

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 9: Disk Fragmenter, part 2: move whole files</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 9: Disk Fragmenter, part 2: move whole files</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            const inputText = reader.result;
+            document.getElementById('inputbox').value = inputText;
+            const fLen = 0;
+            const fFree = 1;
+            const fUsedFree = 2;
+            let compressedFiles = [];
+            for (let i = 0; i < inputText.length; i+=2)
+                compressedFiles.push([Number(inputText[i]), (i < (inputText.length - 1)) ? Number(inputText[i+1]) : 0, 0]);
+
+            let checksum = 0;
+            for (let rightFileId = compressedFiles.length - 1; rightFileId > 0; rightFileId--) {
+                let rightFileLen = compressedFiles[rightFileId][fLen];
+                if (rightFileLen > 0) {
+                    let uncompressedIndex = 0;
+                    for (let leftFileId = 0; leftFileId < rightFileId; leftFileId++) {
+                        uncompressedIndex += compressedFiles[leftFileId][fLen] + compressedFiles[leftFileId][fUsedFree];
+                        if (compressedFiles[leftFileId][fFree] >= rightFileLen) {
+                            compressedFiles[leftFileId][fFree] -= rightFileLen;
+                            compressedFiles[leftFileId][fUsedFree] += rightFileLen;
+                            for (let moveBlock = 0; moveBlock < rightFileLen; moveBlock++)
+                                checksum += rightFileId * uncompressedIndex++;
+                            // Now that right file has been moved, mark it as free so it doesn't get re-added to checksum later
+                            compressedFiles[rightFileId][fFree] += rightFileLen;
+                            compressedFiles[rightFileId][fLen] = 0;
+                            console.log(`Moved right file id ${rightFileId} into free space after ${leftFileId}`);
+                            break; // done moving this file, stop looking for a new place for it
+                        } else {
+                            uncompressedIndex += compressedFiles[leftFileId][fFree];
+                        }
+                    }
+                }
+            }   
+            let uncompressedIndex = 0;
+            for (let leftFileId = 0; leftFileId < compressedFiles.length; leftFileId++) {
+                leftFileLength = compressedFiles[leftFileId][fLen];
+                // Add checksum of left file
+                for (let leftFileUncompressedIndex = 0; leftFileUncompressedIndex < leftFileLength; leftFileUncompressedIndex++) {
+                    console.log(`Add left file id ${leftFileId} * index ${uncompressedIndex} = ${leftFileId * uncompressedIndex}`)
+                    checksum += leftFileId * uncompressedIndex++;
+                }
+                // Advance uncompressed index past free space after this file. Used free space is already in checksum.
+                uncompressedIndex += compressedFiles[leftFileId][fUsedFree] + compressedFiles[leftFileId][fFree];
+            }
+            outputBox.value = "checksum (part 2): " + checksum + "\n";
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
