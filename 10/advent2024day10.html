@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 10: Hoof It</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 10: Hoof It</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function countReachableFrom(grid, row, col, nextValue) {
+        //console.log("checking row", row, "col", col, "for", nextValue);
+        if (row >=0 && row < grid.length && grid[row][col] === nextValue)
+            if (nextValue === 9) {
+                grid[row][col] = -1;
+                return 1;
+            }
+            else
+                return countReachableFrom(grid, row-1, col, nextValue+1)
+                     + countReachableFrom(grid, row+1, col, nextValue+1)
+                     + countReachableFrom(grid, row, col-1, nextValue+1)
+                     + countReachableFrom(grid, row, col+1, nextValue+1);
+        return 0;                     
+    }
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const grid = reader.result.split(/\r?\n/).map(line => line.split('').map(Number));
+            const gridHeight = grid.length;
+            const gridWidth = grid[0].length;
+            // Part 1
+            let sum1 = 0;
+            for (let startRow = 0; startRow <= gridHeight; startRow++)
+                for (let startCol = 0; startCol <= gridWidth; startCol++) {
+                    const tempGrid = grid.map(a => a.map(val => val));
+                    const count = countReachableFrom(tempGrid, startRow, startCol, 0);
+                    sum1 += count;
+                    if (count > 0) console.log(count, "reachable from row", startRow, "col", startCol)
+                }
+
+            // Part 2
+            let sum2 = 0;
+
+            outputBox.value = "What is the sum of the scores of all trailheads on your topographic map? (part 1): " + sum1;
+                            // + "\n (part 2): " + sum2
+                            // + "\n" + grid.map(a => a.map(val => isNaN(val) ? "." : String(val)).join('')).join("\n");
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
