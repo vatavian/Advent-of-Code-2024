@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 12: Garden Groups</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 12: Garden Groups</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function collectReachableFrom(grid, row, col, group) {
+        //console.log("checking row", row, "col", col, "for", nextValue);
+        if (grid[row]?.[col] === group[0]) {
+            group.push([row, col]);
+            grid[row][col] = 0;
+            collectReachableFrom(grid, row-1, col, group);
+            collectReachableFrom(grid, row+1, col, group);
+            collectReachableFrom(grid, row, col-1, group);
+            collectReachableFrom(grid, row, col+1, group);
+        }
+    }
+
+    function groupPerimeter(group) {
+        let perimeter = 4 * (group.length - 1);
+        for (i=1; i < group.length; i++) {
+            const [row, col] = group[i];
+            if (group.some(value => (value[0] == row+1 && value[1] == col))) perimeter--;
+            if (group.some(value => (value[0] == row+1 && value[1] == col))) perimeter--;
+            if (group.some(value => (value[0] == row && value[1] == col-1))) perimeter--;
+            if (group.some(value => (value[0] == row && value[1] == col+1))) perimeter--;
+        }
+        return perimeter;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            const grid = reader.result.split(/\r?\n/).map(line => line.split(''));
+            const gridHeight = grid.length;
+            const gridWidth = grid[0].length;
+            // Part 1
+            let sum1 = 0;
+            let groups = [];
+            for (let startRow = 0; startRow < gridHeight; startRow++)
+                for (let startCol = 0; startCol < gridWidth; startCol++) {
+                    const groupTag = grid[startRow][startCol];
+                    if (groupTag) {
+                        const newGroup = [groupTag];
+                        collectReachableFrom(grid, startRow, startCol, newGroup);
+                        groups.push(newGroup);
+                        const area = newGroup.length - 1;
+                        const perimeter = groupPerimeter(newGroup);
+                        const groupCost = area * perimeter;
+                        sum1 += groupCost;
+                        console.log("reachable from row", startRow, "col", startCol, "area", area, "perimeter", perimeter, "cost", groupCost, newGroup);
+                    }
+                }
+
+            outputBox.value = "part 1 total cost " + sum1 + " groups: " + JSON.stringify(groups);
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
