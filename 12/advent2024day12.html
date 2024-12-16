@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>2024 Advent of Code, Day 12: Garden Groups</title>
+    <title>2024 Advent of Code, Day 12: Garden Groups, part 2: count straight sides</title>
 </head>
 <body>
 
-<h1>2024 Advent of Code, Day 12: Garden Groups</h1>
+<h1>2024 Advent of Code, Day 12: Garden Groups, part 2: count straight sides</h1>
 
 <p>Save input as a .txt file and select it using this file selector:</p>
 
@@ -32,12 +32,40 @@
         let perimeter = 4 * (group.length - 1);
         for (i=1; i < group.length; i++) {
             const [row, col] = group[i];
-            if (group.some(value => (value[0] == row+1 && value[1] == col))) perimeter--;
+            if (group.some(value => (value[0] == row-1 && value[1] == col))) perimeter--;
             if (group.some(value => (value[0] == row+1 && value[1] == col))) perimeter--;
             if (group.some(value => (value[0] == row && value[1] == col-1))) perimeter--;
             if (group.some(value => (value[0] == row && value[1] == col+1))) perimeter--;
         }
         return perimeter;
+    }
+
+    function groupStraightSides(group) {
+        let sides = 4 * (group.length - 1);
+        for (i=1; i < group.length; i++) {
+            const [row, col] = group[i];
+            // If north border is not a new straight side because:
+            if (group.some(value => (value[0] == row-1 && value[1] == col)) ||    // it has a neighbor north so that is not a side or
+                (group.some(value => (value[0] == row && value[1] == col-1)) &&   // it has a neighbor west and
+                 !group.some(value => (value[0] == row-1 && value[1] == col-1)))) // that neighbor has the same side
+                    sides--;                                                      // don't count this as a new side
+            // If south border is not a new straight side because:
+            if (group.some(value => (value[0] == row+1 && value[1] == col)) ||    // it has a neighbor south so that is not a side or
+                (group.some(value => (value[0] == row && value[1] == col-1)) &&   // it has a neighbor west and
+                 !group.some(value => (value[0] == row+1 && value[1] == col-1)))) // that neighbor has the same side
+                    sides--;                                                      // don't count this as a new side
+            // If west border is not a new straight side because:
+            if (group.some(value => (value[0] == row && value[1] == col-1)) ||    // it has a neighbor west so that is not a side or
+                (group.some(value => (value[0] == row-1 && value[1] == col)) &&   // it has a neighbor north and
+                 !group.some(value => (value[0] == row-1 && value[1] == col-1)))) // that neighbor has the same side
+                    sides--;                                                      // don't count this as a new side
+            // If east border is not a new straight side because:
+            if (group.some(value => (value[0] == row && value[1] == col+1)) ||    // it has a neighbor east so that is not a side or
+                (group.some(value => (value[0] == row-1 && value[1] == col)) &&   // it has a neighbor north and
+                 !group.some(value => (value[0] == row-1 && value[1] == col+1)))) // that neighbor has the same side
+                    sides--;                                                      // don't count this as a new side
+        }
+        return sides;
     }
 
     function readFile(input) { 
@@ -48,8 +76,8 @@
             const grid = reader.result.split(/\r?\n/).map(line => line.split(''));
             const gridHeight = grid.length;
             const gridWidth = grid[0].length;
-            // Part 1
             let sum1 = 0;
+            let sum2 = 0;
             let groups = [];
             for (let startRow = 0; startRow < gridHeight; startRow++)
                 for (let startCol = 0; startCol < gridWidth; startCol++) {
@@ -60,13 +88,16 @@
                         groups.push(newGroup);
                         const area = newGroup.length - 1;
                         const perimeter = groupPerimeter(newGroup);
-                        const groupCost = area * perimeter;
-                        sum1 += groupCost;
-                        console.log("reachable from row", startRow, "col", startCol, "area", area, "perimeter", perimeter, "cost", groupCost, newGroup);
+                        const groupCost1 = area * perimeter;
+                        sum1 += groupCost1;
+                        const straightSides = groupStraightSides(newGroup);
+                        const groupCost2 = area * straightSides;
+                        sum2 += groupCost2;
+                        console.log("reachable from row", startRow, "col", startCol, "area", area, "perimeter", perimeter, "cost1", groupCost1, "straightSides", straightSides, "cost2", groupCost2, newGroup);
                     }
                 }
 
-            outputBox.value = "part 1 total cost " + sum1 + " groups: " + JSON.stringify(groups);
+            outputBox.value = "part 1 total cost " + sum1 + ", part 2 total cost " + sum2 + " groups: " + JSON.stringify(groups);
         }
         let file = input.files[0];
         reader.readAsText(file);
