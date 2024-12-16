@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 11: Plutonian Pebbles, part 1: How many stones will you have after blinking 25 times?</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 11: Plutonian Pebbles, part 1: How many stones will you have after blinking 25 times?</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+  
+    // If the stone is engraved with the number 0, it is replaced by a stone engraved with the number 1.
+    // If the stone is engraved with a number that has an even number of digits, it is replaced by two stones. The left half of the digits are engraved on the new left stone, and the right half of the digits are engraved on the new right stone. (The new numbers don't keep extra leading zeroes: 1000 would become stones 10 and 0.)
+    // If none of the other rules apply, the stone is replaced by a new stone; the old stone's number multiplied by 2024 is engraved on the new stone.
+
+    function transformStone(oldValue) {
+        if (oldValue === 0) return [1];
+        const digits = String(oldValue);
+        const halfLen = Math.floor(digits.length/2);
+        if (halfLen + halfLen === digits.length) {
+            return [Number(digits.slice(0, halfLen)), Number(digits.slice(halfLen))]
+        } else {
+            return [2024 * oldValue];
+        }
+    }
+
+    function depthFirstCount(oldValue, stepsToGo) {
+        if (stepsToGo === 0) return 1;
+        const nextStep = transformStone(oldValue);
+        let count = 0;
+        for (const newVal of nextStep) {
+            count += depthFirstCount(newVal, stepsToGo - 1);
+        }
+        return count;
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            let a = reader.result.split(/\s+/).map(Number);
+            console.log("Initial:", a);
+            //console.log("Step 1:", a.map(transformStone).flat())
+            const blinks1 = 25;
+            outputBox.value = "Starting part 1: " + blinks1 + " blinks.";
+            const counts1 = a.map(val => depthFirstCount(val, blinks1));
+            const sum1 = counts1.reduce((sum, current) => sum + current, 0);
+            console.log("blinks1:", blinks1, "counts", counts1, "Sum", sum1);
+            outputBox.value = "part 1: " + sum1 + " after " + blinks1 + " blinks\n"
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>

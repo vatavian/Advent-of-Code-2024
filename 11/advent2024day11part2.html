@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 11: Plutonian Pebbles, part 2: How many stones will you have after blinking 75 times?</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 11: Plutonian Pebbles, part 2: How many stones will you have after blinking 75 times?</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+  
+    // If the stone is engraved with the number 0, it is replaced by a stone engraved with the number 1.
+    // If the stone is engraved with a number that has an even number of digits, it is replaced by two stones. The left half of the digits are engraved on the new left stone, and the right half of the digits are engraved on the new right stone. (The new numbers don't keep extra leading zeroes: 1000 would become stones 10 and 0.)
+    // If none of the other rules apply, the stone is replaced by a new stone; the old stone's number multiplied by 2024 is engraved on the new stone.
+
+    function transformStone(oldValue) {
+        if (oldValue === 0) return [1];
+        const digits = String(oldValue);
+        const halfLen = Math.floor(digits.length/2);
+        if (halfLen + halfLen === digits.length) {
+            return [Number(digits.slice(0, halfLen)), Number(digits.slice(halfLen))]
+        } else {
+            return [2024 * oldValue];
+        }
+    }
+
+    function buildMap(valArray, count = 1, valMap = new Map()) {
+        for (const newVal of valArray)
+            valMap.set(newVal, count + (valMap.get(newVal) || 0));
+        return valMap;
+    }
+
+    function countMap(valMap) {
+        return valMap.values().reduce((sum, current) => sum + current, 0);
+    }
+
+    function breadthFirstCount(valMap, stepsToGo) {
+        let oldMap = valMap;
+        // console.log("Starting map", oldMap);
+        // console.log("Starting count", countMap(oldMap));
+        while (stepsToGo > 0) {
+            const newMap = new Map();
+            oldMap.forEach((count, oldValue) => {
+                transformStone(oldValue).forEach(newStone => newMap.set(newStone, count + (newMap.get(newStone) || 0)))
+            });
+            stepsToGo--;
+            // console.log("Blinks to go", stepsToGo, "count", countMap(newMap), newMap);
+            oldMap = newMap;
+        }
+        return countMap(oldMap);
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            let a = reader.result.split(/\s+/).map(Number);
+            console.log("Initial:", a);
+            // console.log("Step 1:", a.map(transformStone).flat())
+            const blinks1 = 25;
+            outputBox.value = "Starting part 1: " + blinks1 + " blinks." 
+            const sum1 =  breadthFirstCount(buildMap(a), blinks1);
+            outputBox.value = "part 1: " + sum1 + " after " + blinks1 + " blinks\n"
+            const blinks2 = 75;
+            const sum2 = breadthFirstCount(buildMap(a), blinks2);
+            outputBox.value += "part2: " + sum2 + " after " + blinks2 + " blinks";
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
