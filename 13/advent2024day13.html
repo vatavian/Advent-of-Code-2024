@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>2024 Advent of Code, Day 13: Claw Contraption</title>
+</head>
+<body>
+
+<h1>2024 Advent of Code, Day 13: Claw Contraption</h1>
+
+<p>Save input as a .txt file and select it using this file selector:</p>
+
+<input type="file" onchange="readFile(this)">
+<br>
+<textarea id="inputbox" placeholder="input text" rows=10></textarea>
+<p>Output:</p>
+<textarea id="outputbox" placeholder="output text" rows=10></textarea>
+
+<script>
+    function computeAB(aX, aY, bX, bY, x, y) {
+        let A = (y * bX - x * bY) / (aY * bX - aX * bY);
+        let B = (x - aX * A) / bX;
+        return [A, B];
+    }
+
+    function readFile(input) { 
+        let reader = new FileReader();
+        reader.onload = function() {
+            const outputBox = document.getElementById('outputbox');
+            document.getElementById('inputbox').value = reader.result;
+            let countWins = 0;
+            let totalCost = 0;
+            let aX=-1, aY=-1, bX=-1, bY=-1, x=-1, y=-1;
+            for (line of reader.result.split(/\r?\n/)) {
+                const lineParts = line.split(/[ .:,=\+]+/);
+                if (lineParts.length > 0) {
+                    if (lineParts[1] === 'A') {
+                        aX = Number(lineParts[3]);
+                        aY = Number(lineParts[5]);
+                    } else if (lineParts[1] === 'B') {
+                        bX = Number(lineParts[3]);
+                        bY = Number(lineParts[5]);
+                    } else if (lineParts[0] === 'Prize') {
+                        x = Number(lineParts[2]);
+                        y = Number(lineParts[4]);
+
+                        if (aX < 0 || aY < 0 || bX < 0 || bY < 0 || x < 0 || y < 0)
+                            console.log("Negative/missing number");
+                        let [a, b] = computeAB(aX, aY, bX, bY, x, y);
+                        let cost = 3 * a + b;
+                        console.log("A", a, "B", b, "X", x, "Y", y, "Cost", cost);
+                        if (a == Math.floor(a) && b == Math.floor(b)) {
+                            countWins++;
+                            totalCost += cost;
+                        }
+                        aX=-1; aY=-1; bX=-1; bY=-1; x=-1; y=-1;
+                    }
+
+                }
+            }
+            outputBox.value = "part 1 total cost " + totalCost + " to win " + countWins;
+        }
+        let file = input.files[0];
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+
+</html>
